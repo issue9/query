@@ -41,6 +41,10 @@ type testQueryObject struct {
 	Int    int       `query:"int,1"`
 	Floats []float64 `query:"floats,1.1,2.2"`
 	States []State   `query:"states,normal,left"`
+
+	Array [5]int  // 即使不指定 query:"-" 也将被忽略
+	Ints  []int   `query:"-"`
+	Float float32 `query:"-"`
 }
 
 func (obj *testQueryString) SanitizeQuery(errors map[string]string) {

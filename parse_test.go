@@ -69,6 +69,7 @@ func TestParseField_slice(t *testing.T) {
 		Floats: []float64{3.3, 4.4},
 	}
 	parseField(r, reflect.ValueOf(data).Elem(), errors)
+	a.Empty(errors)
 	a.Equal(data.Floats, []float64{11.1})
 
 	// 指定了默认值，指定空参数，则使用默认值
@@ -78,15 +79,17 @@ func TestParseField_slice(t *testing.T) {
 		Floats: []float64{3.3, 4.4},
 	}
 	parseField(r, reflect.ValueOf(data).Elem(), errors)
+	a.Empty(errors)
 	a.Equal(data.Floats, []float64{3.3, 4.4})
 
-	// 指定了默认值，未指定数，则使用默认值
+	// 指定了默认值，未指定参数，则使用默认值
 	errors = map[string]string{}
 	r = httptest.NewRequest(http.MethodGet, "/q", nil)
 	data = &testQueryObject{
 		Floats: []float64{3.3, 4.4},
 	}
 	parseField(r, reflect.ValueOf(data).Elem(), errors)
+	a.Empty(errors)
 	a.Equal(data.Floats, []float64{3.3, 4.4})
 
 	// 都未指定，则使用 struct tag 中的默认值
@@ -94,7 +97,16 @@ func TestParseField_slice(t *testing.T) {
 	r = httptest.NewRequest(http.MethodGet, "/q", nil)
 	data = &testQueryObject{}
 	parseField(r, reflect.ValueOf(data).Elem(), errors)
+	a.Empty(errors)
 	a.Equal(data.Floats, []float64{1.1, 2.2})
+
+	// 无法解析的参数
+	errors = map[string]string{}
+	r = httptest.NewRequest(http.MethodGet, "/q?floats=3x.5,bb", nil)
+	data = &testQueryObject{}
+	parseField(r, reflect.ValueOf(data).Elem(), errors)
+	a.True(len(errors["floats"]) > 0)
+	a.Empty(data.Floats)
 }
 
 func TestGetQueryTag(t *testing.T) {
