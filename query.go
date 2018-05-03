@@ -106,10 +106,8 @@ func parseField(r *http.Request, rval reflect.Value, errors map[string]string) {
 		switch tf.Type.Kind() {
 		case reflect.Slice:
 			parseFieldSlice(r, errors, tf, vf)
-		case reflect.Array:
-			parseFieldArray(r, errors, tf, vf)
-		case reflect.Ptr, reflect.Chan, reflect.Func:
-			// TODO 忽略
+		case reflect.Ptr, reflect.Chan, reflect.Func, reflect.Array, reflect.Complex128, reflect.Complex64:
+			// 这些类型的字段，直接忽略
 		default:
 			parseFieldValue(r, errors, tf, vf)
 		}
@@ -185,43 +183,6 @@ func parseFieldSlice(r *http.Request, errors map[string]string, tf reflect.Struc
 			return
 		}
 		vf.Set(reflect.Append(vf, elem.Elem()))
-	}
-}
-
-func parseFieldArray(r *http.Request, errors map[string]string, tf reflect.StructField, vf reflect.Value) {
-	name, def := getQueryTag(tf)
-	if name == "" {
-		return
-	}
-
-	val := r.FormValue(name)
-
-	if val == "" {
-		val = def
-	}
-	vals := strings.Split(val, ",")
-
-	elemtype := tf.Type.Elem()
-	for elemtype.Kind() == reflect.Ptr {
-		elemtype = elemtype.Elem()
-	}
-
-	if tf.Type.Len() < len(vals) { // array 类型的长度从其 type 上获取
-		vals = vals[:tf.Type.Len()]
-	}
-
-	for index, v := range vals {
-		elem := vf.Index(index)
-		if q, ok := elem.Interface().(UnmarshalQueryer); ok {
-			if err := q.UnmarshalQuery(v); err != nil {
-				errors[name] = err.Error()
-				return
-			}
-		}
-		if err := conv.Value(v, elem); err != nil {
-			errors[name] = err.Error()
-			return
-		}
 	}
 }
 

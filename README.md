@@ -51,7 +51,11 @@ func handle(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    // do something
+    // 请求参数为 /?page=1&size=2&state=normal,delete
+    // 则 q 的值为
+    // page = 1
+    // size = 2
+    // states = []State{StateLocked, StateDelete}
 }
 ```
 
