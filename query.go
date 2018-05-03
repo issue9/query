@@ -2,6 +2,36 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
+// Package query 提供将查询参数解析到结构体的相关操作。
+//
+//
+// struct tag
+//
+// 通过 struct tag 的方式将查询参数与结构体中的字段进行关联。
+// struct tag 的格式如下：
+//  `query:"name,default"`
+// 其中 name 为对应查询参数的名称，或是为空则采用字段本身的名称；
+// default 表示在没有参数的情况下，采用的默认值，可以为空。
+//
+//
+// 数组：
+//
+// 如果字段表示的是切片，那么查询参数的值，将以半角逗号作为分隔符进行转换写入到切片中。
+// struct tag 中的默认值，也可以指定多个：
+//  type Object struct {
+//      Slice []int `query:"name,1,2"`
+//  }
+// 以上内容，在没有指定参数的情况下，Slice 会被指定为 []int{1,2}
+//
+//
+// 默认值：
+//
+// 默认值可以通过 struct tag 指定，也可以通过在初始化对象时，另外指定：
+//  obj := &Object{
+//      Slice: []int{3,4,5}
+//  }
+// 以上内容，在不传递参数时，会采用 []int{3,4,5} 作为其默认值，而不是 struct tag
+// 中指定的 []int{1,2}。
 package query
 
 import (
@@ -43,35 +73,6 @@ type UnmarshalQueryer interface {
 // Parse 将查询参数解析到一个对象中。
 //
 // 返回的是每一个字段对应的错误信息。
-//
-//
-// struct tag
-//
-// 通过 struct tag 的方式将查询参数与结构体中的字段进行关联。
-// struct tag 的格式如下：
-//  `query:"name,default"`
-// 其中 name 为对应查询参数的名称，或是为空则采用字段本身的名称；
-// default 表示在没有参数的情况下，采用的默认值，可以为空。
-//
-//
-// 数组：
-//
-// 如果字段表示的是切片，那么查询参数的值，将以半角逗号作为分隔符进行转换写入到切片中。
-// struct tag 中的默认值，也可以指定多个：
-//  type Object struct {
-//      Slice []int `query:"name,1,2"`
-//  }
-// 以上内容，在没有指定参数的情况下，Slice 会被指定为 []int{1,2}
-//
-//
-// 默认值：
-//
-// 默认值可以通过 struct tag 指定，也可以通过在初始化对象时，另外指定：
-//  obj := &Object{
-//      Slice: []int{3,4,5}
-//  }
-// 以上内容，在不传递参数时，会采用 []int{3,4,5} 作为其默认值，而不是 struct tag
-// 中指定的 []int{1,2}。
 func Parse(r *http.Request, v interface{}) (errors map[string]string) {
 	rval := reflect.ValueOf(v)
 	for rval.Kind() == reflect.Ptr {

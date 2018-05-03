@@ -6,6 +6,56 @@ query [![Build Status](https://travis-ci.org/issue9/query.svg?branch=master)](ht
 ======
 
 
+提供了将 web 请求中的查询参数解析到结构体的操作。
+
+```go
+type State int8
+
+const (
+    StateLocked State = iota+1
+    StateDelete
+)
+
+// 实现 query.UnmarshalQueryer 接口
+func (s *State) UnmarshalQuery(data string) error {
+    switch data {
+    case "locked":
+        *s = StateLocked
+    case "delete":
+        *s = StateDelete
+    default:
+        return errors.New("无效的值")
+    }
+}
+
+type struct Query {
+    Page int `query:"page,1"`
+    Size int `query:"size,20"`
+    States []State `query:"state,normal"`
+}
+
+func (q *Query) SanitizeQuery(errors map[string]string) {
+    if q.Page < 0 {
+        errors["page"] = "不能小于零"
+    }
+
+    // 其它字段的验证
+}
+
+
+func handle(w http.ResponseWriter, r *http.Request) {
+    q := &Query{}
+    errors := query.Parse(r, q)
+    if len(errors) > 0 {
+        // TODO
+        return
+    }
+
+    // do something
+}
+```
+
+
 ### 安装
 
 ```shell
