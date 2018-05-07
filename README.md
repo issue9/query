@@ -56,6 +56,9 @@ func handle(w http.ResponseWriter, r *http.Request) {
     // page = 1
     // size = 2
     // states = []State{StateLocked, StateDelete}
+    //
+    // 参数 state 也可使用以下方式
+    // /?page=1&size=2&state=normal&normal=delete
 }
 ```
 
