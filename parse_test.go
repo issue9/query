@@ -100,6 +100,22 @@ func TestParseField_slice(t *testing.T) {
 	a.Empty(errors)
 	a.Equal(data.Floats, []float64{1.1, 2.2})
 
+	// 采用 x=1&x=2的方式传递数组
+	errors = map[string]string{}
+	r = httptest.NewRequest(http.MethodGet, "/q?floats=3.3&floats=4.4", nil)
+	data = &testQueryObject{}
+	parseField(r, reflect.ValueOf(data).Elem(), errors)
+	a.Empty(errors)
+	a.Equal(data.Floats, []float64{3.3, 4.4})
+
+	// 采用 x=1&x=2的方式传递数组，且值中带逗号
+	errors = map[string]string{}
+	r = httptest.NewRequest(http.MethodGet, "/q?strings=str1&strings=str2,str3", nil)
+	data = &testQueryObject{}
+	parseField(r, reflect.ValueOf(data).Elem(), errors)
+	a.Empty(errors)
+	a.Equal(data.Strings, []string{"str1", "str2,str3"})
+
 	// 无法解析的参数
 	errors = map[string]string{}
 	r = httptest.NewRequest(http.MethodGet, "/q?floats=3x.5,bb", nil)

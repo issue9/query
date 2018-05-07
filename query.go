@@ -19,9 +19,12 @@
 // 如果字段表示的是切片，那么查询参数的值，将以半角逗号作为分隔符进行转换写入到切片中。
 // struct tag 中的默认值，也可以指定多个：
 //  type Object struct {
-//      Slice []int `query:"name,1,2"`
+//      Slice []int `query:"slices,1,2"`
 //  }
 // 以上内容，在没有指定参数的情况下，Slice 会被指定为 []int{1,2}
+//
+// 查询参数中，可以通过 slices=v1,v2 的方式将 v1,v2 解析为一个数组传递给 slices，
+// 如果值中有逗号，则可以使用 slices=v1&slices=v2,v3 的方式将值解析成 []string{"v1", "v2,v3"}
 //
 //
 // 默认值：

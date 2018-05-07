@@ -91,23 +91,33 @@ func parseFieldSlice(r *http.Request, errors map[string]string, tf reflect.Struc
 		return
 	}
 
-	val := r.FormValue(name)
+	r.ParseForm()
+	vals := make([]string, 0, len(r.Form[name]))
+	for _, val := range r.Form[name] {
+		if val == "" {
+			continue
+		}
+		vals = append(vals, val)
+	}
 
-	if val == "" {
-		if vf.Len() > 0 { // 有默认值，则采用默认值
+	if len(vals) == 0 {
+		if vf.Len() > 0 { // 实例有默认值，则采用默认值
 			return
 		}
-		val = def
+
+		if def == "" {
+			return
+		}
+
+		vals = []string{def}
 	}
 
-	if val == "" { // 依然是空值
-		return
+	if len(vals) == 1 {
+		vals = strings.Split(vals[0], ",")
 	}
 
-	vals := strings.Split(val, ",")
-	if len(vals) > 0 { // 指定了参数，则舍弃 slice 中的旧值
-		vf.Set(vf.Slice(0, 0))
-	}
+	// 指定了参数，则舍弃 slice 中的旧值
+	vf.Set(vf.Slice(0, 0))
 
 	elemtype := tf.Type.Elem()
 	for elemtype.Kind() == reflect.Ptr {
