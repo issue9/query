@@ -53,7 +53,7 @@ type SanitizeQueryer interface {
 //
 // 比如一个查询参数格式如下：
 //  /path?state=locked
-// 而实际上后端的将 state 表示为一个数值：
+// 而实际上后端将 state 表示为一个数值：
 //  type State int8
 //  const StateLocked State = 1
 // 那么只要 State 实现 UnmarshalQueryer 接口，就可以实现将 locked 转换成 1 的能力。
