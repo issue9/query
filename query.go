@@ -62,6 +62,8 @@ type SanitizeQueryer interface {
 //          *s = StateLocked
 //      }
 //  }
+//
+// NOTE: 空值不会调用该接口。
 type UnmarshalQueryer interface {
 	// data 表示由查询参数传递过来的单个值。
 	UnmarshalQuery(data string) error
