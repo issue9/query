@@ -1,6 +1,5 @@
 query
 [![Build Status](https://travis-ci.org/issue9/query.svg?branch=master)](https://travis-ci.org/issue9/query)
-[![Build status](https://ci.appveyor.com/api/projects/status/tjy2cxn63bf2bm6i?svg=true)](https://ci.appveyor.com/project/caixw/query)
 [![Go version](https://img.shields.io/badge/Go-1.10-brightgreen.svg?style=flat)](https://golang.org)
 [![Go Report Card](https://goreportcard.com/badge/github.com/issue9/query)](https://goreportcard.com/report/github.com/issue9/query)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](https://opensource.org/licenses/MIT)
