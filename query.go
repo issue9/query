@@ -39,7 +39,8 @@
 // 中指定的 []int{1,2}。
 package query
 
-const queryTag = "query"
+// Tag 在 struct tag 的标签名称
+const Tag = "query"
 
 // SanitizeQueryer 表示对一个查询参数构成的结构体进行数据验证和内容修正的接口
 type SanitizeQueryer interface {

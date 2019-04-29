@@ -91,7 +91,6 @@ func parseFieldSlice(r *http.Request, errors map[string]string, tf reflect.Struc
 		return
 	}
 
-	r.ParseForm()
 	vals := make([]string, 0, len(r.Form[name]))
 	for _, val := range r.Form[name] {
 		if val == "" {
@@ -140,7 +139,7 @@ func parseFieldSlice(r *http.Request, errors map[string]string, tf reflect.Struc
 
 // 返回值中的 name 如果为空，表示忽略这个字段的内容。
 func getQueryTag(field reflect.StructField) (name, def string) {
-	tag := field.Tag.Get(queryTag)
+	tag := field.Tag.Get(Tag)
 	if tag == "-" {
 		return "", ""
 	}
