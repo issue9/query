@@ -6,6 +6,7 @@ package query
 
 import (
 	"net/http"
+	"net/url"
 	"reflect"
 	"strings"
 
@@ -33,8 +34,10 @@ func Parse(r *http.Request, v interface{}) (errors map[string]string) {
 }
 
 func parseField(r *http.Request, rval reflect.Value, errors map[string]string) {
-	rtype := rval.Type()
+	// TODO: r.URL.Query() 忽略了错误值，下个版本改成使用 url.ParseQuery(u.URL.RawQuery)?
+	vals := r.URL.Query()
 
+	rtype := rval.Type()
 	for i := 0; i < rtype.NumField(); i++ {
 		tf := rtype.Field(i)
 
@@ -47,22 +50,22 @@ func parseField(r *http.Request, rval reflect.Value, errors map[string]string) {
 
 		switch tf.Type.Kind() {
 		case reflect.Slice:
-			parseFieldSlice(r, errors, tf, vf)
+			parseFieldSlice(vals, errors, tf, vf)
 		case reflect.Ptr, reflect.Chan, reflect.Func, reflect.Array, reflect.Complex128, reflect.Complex64:
 			// 这些类型的字段，直接忽略
 		default:
-			parseFieldValue(r, errors, tf, vf)
+			parseFieldValue(vals, errors, tf, vf)
 		}
 	} // end for
 }
 
-func parseFieldValue(r *http.Request, errors map[string]string, tf reflect.StructField, vf reflect.Value) {
+func parseFieldValue(vals url.Values, errors map[string]string, tf reflect.StructField, vf reflect.Value) {
 	name, def := getQueryTag(tf)
 	if name == "" {
 		return
 	}
 
-	val := r.FormValue(name)
+	val := vals.Get(name)
 	if val == "" {
 		if vf.Interface() != reflect.Zero(tf.Type).Interface() {
 			return
@@ -85,14 +88,14 @@ func parseFieldValue(r *http.Request, errors map[string]string, tf reflect.Struc
 	}
 }
 
-func parseFieldSlice(r *http.Request, errors map[string]string, tf reflect.StructField, vf reflect.Value) {
+func parseFieldSlice(form url.Values, errors map[string]string, tf reflect.StructField, vf reflect.Value) {
 	name, def := getQueryTag(tf)
 	if name == "" {
 		return
 	}
 
-	vals := make([]string, 0, len(r.Form[name]))
-	for _, val := range r.Form[name] {
+	vals := make([]string, 0, len(form[name]))
+	for _, val := range form[name] {
 		if val == "" {
 			continue
 		}
