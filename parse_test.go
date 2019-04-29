@@ -46,6 +46,15 @@ func TestParseField(t *testing.T) {
 		Equal(data.Floats, []float64{1.0, 1.1}).
 		Equal(data.Strings, []string{"s1"})
 
+	// 非英文内容
+	errors = map[string]string{}
+	r = httptest.NewRequest(http.MethodGet, "/q?字符串=字符串1&字符串列表=字符串2&字符串列表=字符串3", nil)
+	cnobj := &testCNQueryString{}
+	parseField(r, reflect.ValueOf(cnobj).Elem(), errors)
+	a.Empty(errors)
+	a.Equal(cnobj.String, "字符串1").
+		Equal(cnobj.Strings, []string{"字符串2", "字符串3"})
+
 	// 出错时的处理
 	errors = map[string]string{}
 	r = httptest.NewRequest(http.MethodGet, "/q?floats=str,1.1&array=10&int=5&strings=s1", nil)
@@ -137,11 +146,11 @@ func TestGetQueryTag(t *testing.T) {
 			Equal(d, def)
 	}
 
-	test(`query:"name,def"`, "name", "def")
-	test(`query:",def"`, "", "def")
-	test(`query:"name,"`, "name", "")
-	test(`query:"name"`, "name", "")
-	test(`query:"name,1,2"`, "name", "1,2")
-	test(`query:"name,1,2,"`, "name", "1,2,")
-	test(`query:"-"`, "", "")
+	test(Tag+`:"name,def"`, "name", "def")
+	test(Tag+`:",def"`, "", "def")
+	test(Tag+`:"name,"`, "name", "")
+	test(Tag+`:"name"`, "name", "")
+	test(Tag+`:"name,1,2"`, "name", "1,2")
+	test(Tag+`:"name,1,2,"`, "name", "1,2,")
+	test(Tag+`:"-"`, "", "")
 }

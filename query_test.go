@@ -36,6 +36,13 @@ type testQueryString struct {
 	State   State    `query:"state,normal"`
 }
 
+// 带中文的字段
+type testCNQueryString struct {
+	String  string   `query:"字符串,str1,str2"`
+	Strings []string `query:"字符串列表,str1,str2"`
+	State   State    `query:"state,normal"`
+}
+
 type testQueryObject struct {
 	testQueryString
 	Int    int       `query:"int,1"`

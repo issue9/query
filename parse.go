@@ -22,15 +22,15 @@ func Parse(r *http.Request, v interface{}) (errors map[string]string) {
 		rval = rval.Elem()
 	}
 
-	ret := make(map[string]string, rval.NumField())
-	parseField(r, rval, ret)
+	errors = make(map[string]string, rval.NumField())
+	parseField(r, rval, errors)
 
 	// 接口在转换完成之后调用。
 	if s, ok := v.(SanitizeQueryer); ok {
-		s.SanitizeQuery(ret)
+		s.SanitizeQuery(errors)
 	}
 
-	return ret
+	return errors
 }
 
 func parseField(r *http.Request, rval reflect.Value, errors map[string]string) {
