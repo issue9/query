@@ -1,11 +1,11 @@
 query
+[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fissue9%2Fquery%2Fbadge%3Fref%3Dmaster&style=flat)](https://actions-badge.atrox.dev/issue9/query/goto?ref=master)
 [![Build Status](https://travis-ci.org/issue9/query.svg?branch=master)](https://travis-ci.org/issue9/query)
 [![Go version](https://img.shields.io/badge/Go-1.10-brightgreen.svg?style=flat)](https://golang.org)
 [![Go Report Card](https://goreportcard.com/badge/github.com/issue9/query)](https://goreportcard.com/report/github.com/issue9/query)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](https://opensource.org/licenses/MIT)
 [![codecov](https://codecov.io/gh/issue9/query/branch/master/graph/badge.svg)](https://codecov.io/gh/issue9/query)
 ======
-
 
 提供了将 web 请求中的查询参数解析到结构体的操作。
 
@@ -43,7 +43,6 @@ func (q *Query) SanitizeQuery(errors map[string]string) {
     // 其它字段的验证
 }
 
-
 func handle(w http.ResponseWriter, r *http.Request) {
     q := &Query{}
     errors := query.Parse(r, q)
@@ -63,21 +62,20 @@ func handle(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-
-### 安装
+安装
+----
 
 ```shell
 go get github.com/issue9/query
 ```
 
-
-### 文档
+文档
+----
 
 [![Go Walker](https://gowalker.org/api/v1/badge)](http://gowalker.org/github.com/issue9/query)
 [![GoDoc](https://godoc.org/github.com/issue9/query?status.svg)](https://godoc.org/github.com/issue9/query)
 
-
-
-### 版权
+版权
+----
 
 本项目采用 [MIT](https://opensource.org/licenses/MIT) 开源授权许可证，完整的授权说明可在 [LICENSE](LICENSE) 文件中找到。
