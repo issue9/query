@@ -1,4 +1,4 @@
-module github.com/issue9/query
+module github.com/issue9/query/v2
 
 require (
 	github.com/issue9/assert v1.4.1
