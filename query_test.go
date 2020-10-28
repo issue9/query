@@ -12,6 +12,11 @@ const (
 	StateLeft                    // 离职
 )
 
+var (
+	x State       = StateLeft
+	_ Unmarshaler = (*State)(&x)
+)
+
 // UnmarshalQuery 解码
 func (s *State) UnmarshalQuery(data string) error {
 	switch data {
@@ -52,16 +57,21 @@ type testQueryObject struct {
 	Float float32 `query:"-"`
 }
 
-func (obj *testQueryString) SanitizeQuery(errors map[string]string) {
+var _ Sanitizer = &testQueryString{}
+
+func (obj *testQueryString) SanitizeQuery(errors Errors) {
 	if obj.State == -1 {
-		errors["state"] = "取值错误"
+		errors.Add("state", "取值错误")
 	}
 }
 
-func (obj *testQueryObject) SanitizeQuery(errors map[string]string) {
+var _ Sanitizer = &testQueryObject{}
+
+func (obj *testQueryObject) SanitizeQuery(errors Errors) {
 	obj.testQueryString.SanitizeQuery(errors)
 
 	if obj.Int == 0 {
-		errors["int"] = "取值错误"
+		errors.Add("int", "取值错误1")
+		errors.Add("int", "取值错误2")
 	}
 }

@@ -11,27 +11,27 @@ import (
 	"github.com/issue9/conv"
 )
 
-// Parse 将查询参数解析到一个对象中。
+// Parse 将查询参数解析到一个对象中
 //
 // 返回的是每一个字段对应的错误信息。
-func Parse(r *http.Request, v interface{}) (errors map[string]string) {
+func Parse(r *http.Request, v interface{}) (errors Errors) {
 	rval := reflect.ValueOf(v)
 	for rval.Kind() == reflect.Ptr {
 		rval = rval.Elem()
 	}
 
-	errors = make(map[string]string, rval.NumField())
+	errors = make(Errors, rval.NumField())
 	parseField(r, rval, errors)
 
 	// 接口在转换完成之后调用。
-	if s, ok := v.(SanitizeQueryer); ok {
+	if s, ok := v.(Sanitizer); ok {
 		s.SanitizeQuery(errors)
 	}
 
 	return errors
 }
 
-func parseField(r *http.Request, rval reflect.Value, errors map[string]string) {
+func parseField(r *http.Request, rval reflect.Value, errors Errors) {
 	// TODO: r.URL.Query() 忽略了错误值，下个版本改成使用 url.ParseQuery(u.URL.RawQuery)?
 	vals := r.URL.Query()
 
@@ -57,7 +57,7 @@ func parseField(r *http.Request, rval reflect.Value, errors map[string]string) {
 	} // end for
 }
 
-func parseFieldValue(vals url.Values, errors map[string]string, tf reflect.StructField, vf reflect.Value) {
+func parseFieldValue(vals url.Values, errors Errors, tf reflect.StructField, vf reflect.Value) {
 	name, def := getQueryTag(tf)
 	if name == "" {
 		return
@@ -75,18 +75,18 @@ func parseFieldValue(vals url.Values, errors map[string]string, tf reflect.Struc
 		return
 	}
 
-	if q, ok := vf.Addr().Interface().(UnmarshalQueryer); ok {
+	if q, ok := vf.Addr().Interface().(Unmarshaler); ok {
 		if err := q.UnmarshalQuery(val); err != nil {
-			errors[name] = err.Error()
+			errors.Add(name, err.Error())
 			return
 		}
 	} else if err := conv.Value(val, vf); err != nil {
-		errors[name] = err.Error()
+		errors.Add(name, err.Error())
 		return
 	}
 }
 
-func parseFieldSlice(form url.Values, errors map[string]string, tf reflect.StructField, vf reflect.Value) {
+func parseFieldSlice(form url.Values, errors Errors, tf reflect.StructField, vf reflect.Value) {
 	name, def := getQueryTag(tf)
 	if name == "" {
 		return
@@ -125,13 +125,13 @@ func parseFieldSlice(form url.Values, errors map[string]string, tf reflect.Struc
 	}
 	for _, v := range vals {
 		elem := reflect.New(elemtype)
-		if q, ok := elem.Interface().(UnmarshalQueryer); ok {
+		if q, ok := elem.Interface().(Unmarshaler); ok {
 			if err := q.UnmarshalQuery(v); err != nil {
-				errors[name] = err.Error()
+				errors.Add(name, err.Error())
 				return
 			}
 		} else if err := conv.Value(v, elem); err != nil {
-			errors[name] = err.Error()
+			errors.Add(name, err.Error())
 			return
 		}
 		vf.Set(reflect.Append(vf, elem.Elem()))

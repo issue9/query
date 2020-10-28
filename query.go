@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-// Package query 提供将查询参数解析到结构体的相关操作。
+// Package query 提供将查询参数解析到结构体的相关操作
 //
 //
 // struct tag
@@ -40,22 +40,22 @@ package query
 // Tag 在 struct tag 的标签名称
 const Tag = "query"
 
-// SanitizeQueryer 表示对一个查询参数构成的结构体进行数据验证和内容修正的接口
-type SanitizeQueryer interface {
+// Sanitizer 表示对一个查询参数构成的结构体进行数据验证和内容修正的接口
+type Sanitizer interface {
 	// 参数 errors 用来保存由函数中发现的错误信息。
 	//
 	// 其中的键名为错误字段名称，键值为错误信息。
-	SanitizeQuery(errors map[string]string)
+	SanitizeQuery(errors Errors)
 }
 
-// UnmarshalQueryer 该接口实现在了将一些特定的查询参数格式转换成其它类型的接口。
+// Unmarshaler 该接口实现在了将一些特定的查询参数格式转换成其它类型的接口
 //
 // 比如一个查询参数格式如下：
 //  /path?state=locked
 // 而实际上后端将 state 表示为一个数值：
 //  type State int8
 //  const StateLocked State = 1
-// 那么只要 State 实现 UnmarshalQueryer 接口，就可以实现将 locked 转换成 1 的能力。
+// 那么只要 State 实现 Unmarshaler 接口，就可以实现将 locked 转换成 1 的能力。
 //  func (s *State) UnmarshalQuery(data string) error {
 //      if data == "locked" {
 //          *s = StateLocked
@@ -63,7 +63,22 @@ type SanitizeQueryer interface {
 //  }
 //
 // NOTE: 空值不会调用该接口。
-type UnmarshalQueryer interface {
+type Unmarshaler interface {
 	// data 表示由查询参数传递过来的单个值。
 	UnmarshalQuery(data string) error
+}
+
+// Errors 表示一组错误信息的集合
+//
+// 键名查询参数名称，键值则为在解析和验证过种中返回的错误信息。
+type Errors map[string][]string
+
+// Add 为查询参数 key 添加一条新的错误信息
+func (err Errors) Add(key, val string) {
+	err[key] = append(err[key], val)
+}
+
+// Set 将查询参数 key 的错误信息改为 val
+func (err Errors) Set(key, val string) {
+	err[key] = []string{val}
 }

@@ -62,13 +62,6 @@ func handle(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-安装
-----
-
-```shell
-go get github.com/issue9/query
-```
-
 版权
 ----
 
