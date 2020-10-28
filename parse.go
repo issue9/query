@@ -14,6 +14,9 @@ import (
 // Parse 将查询参数解析到一个对象中
 //
 // 返回的是每一个字段对应的错误信息。
+//
+// Parse 采用 r.URL.Query() 作为获取查询参数的方式，
+// 而 r.URL.Query() 是忽略对 URL 解析的错误处理的。
 func Parse(r *http.Request, v interface{}) (errors Errors) {
 	rval := reflect.ValueOf(v)
 	for rval.Kind() == reflect.Ptr {
@@ -21,7 +24,7 @@ func Parse(r *http.Request, v interface{}) (errors Errors) {
 	}
 
 	errors = make(Errors, rval.NumField())
-	parseField(r, rval, errors)
+	parseField(r.URL.Query(), rval, errors)
 
 	// 接口在转换完成之后调用。
 	if s, ok := v.(Sanitizer); ok {
@@ -31,16 +34,13 @@ func Parse(r *http.Request, v interface{}) (errors Errors) {
 	return errors
 }
 
-func parseField(r *http.Request, rval reflect.Value, errors Errors) {
-	// TODO: r.URL.Query() 忽略了错误值，下个版本改成使用 url.ParseQuery(u.URL.RawQuery)?
-	vals := r.URL.Query()
-
+func parseField(vals url.Values, rval reflect.Value, errors Errors) {
 	rtype := rval.Type()
 	for i := 0; i < rtype.NumField(); i++ {
 		tf := rtype.Field(i)
 
 		if tf.Anonymous {
-			parseField(r, rval.Field(i), errors)
+			parseField(vals, rval.Field(i), errors)
 			continue
 		}
 

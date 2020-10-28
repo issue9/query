@@ -4,7 +4,7 @@ query
 [![Go Report Card](https://goreportcard.com/badge/github.com/issue9/query)](https://goreportcard.com/report/github.com/issue9/query)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](https://opensource.org/licenses/MIT)
 [![codecov](https://codecov.io/gh/issue9/query/branch/master/graph/badge.svg)](https://codecov.io/gh/issue9/query)
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/issue9/query)](https://pkg.go.dev/github.com/issue9/query)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/issue9/query/v2)](https://pkg.go.dev/github.com/issue9/query/v2)
 ======
 
 提供了将 web 请求中的查询参数解析到结构体的操作。
