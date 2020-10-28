@@ -45,7 +45,7 @@ func (q *Query) SanitizeQuery(errors map[string]string) {
 
 func handle(w http.ResponseWriter, r *http.Request) {
     q := &Query{}
-    errors := query.Parse(r, q)
+    errors := query.Parse(r.URL.Query(), q)
     if len(errors) > 0 {
         // TODO
         return

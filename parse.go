@@ -3,7 +3,6 @@
 package query
 
 import (
-	"net/http"
 	"net/url"
 	"reflect"
 	"strings"
@@ -14,17 +13,14 @@ import (
 // Parse 将查询参数解析到一个对象中
 //
 // 返回的是每一个字段对应的错误信息。
-//
-// Parse 采用 r.URL.Query() 作为获取查询参数的方式，
-// 而 r.URL.Query() 是忽略对 URL 解析的错误处理的。
-func Parse(r *http.Request, v interface{}) (errors Errors) {
+func Parse(queries url.Values, v interface{}) (errors Errors) {
 	rval := reflect.ValueOf(v)
 	for rval.Kind() == reflect.Ptr {
 		rval = rval.Elem()
 	}
 
 	errors = make(Errors, rval.NumField())
-	parseField(r.URL.Query(), rval, errors)
+	parseField(queries, rval, errors)
 
 	// 接口在转换完成之后调用。
 	if s, ok := v.(Sanitizer); ok {

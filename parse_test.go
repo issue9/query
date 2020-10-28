@@ -16,7 +16,7 @@ func TestParse(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/q?string=str&strings=s1,s2&int=0", nil)
 	data := &testQueryObject{}
 
-	errors := Parse(r, data)
+	errors := Parse(r.URL.Query(), data)
 	a.Equal(len(errors["int"]), 2)
 	a.Equal(data.Int, 0).
 		Equal(data.String, "str").
