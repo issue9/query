@@ -2,7 +2,12 @@
 
 package query
 
-import "fmt"
+import (
+	"fmt"
+	"testing"
+
+	"github.com/issue9/assert"
+)
 
 type State int
 
@@ -74,4 +79,27 @@ func (obj *testQueryObject) SanitizeQuery(errors Errors) {
 		errors.Add("int", "取值错误1")
 		errors.Add("int", "取值错误2")
 	}
+}
+
+func TestErrors(t *testing.T) {
+	a := assert.New(t)
+
+	errs := Errors{}
+
+	a.Panic(func() {
+		errs.Add("key")
+	})
+
+	a.Panic(func() {
+		errs.Set("key")
+	})
+
+	errs.Add("key1", "v1", "v2")
+	a.Equal(errs, map[string][]string{"key1": {"v1", "v2"}})
+
+	errs.Add("key1", "v1", "v3")
+	a.Equal(errs, map[string][]string{"key1": {"v1", "v2", "v1", "v3"}})
+
+	errs.Set("key1", "v1")
+	a.Equal(errs, map[string][]string{"key1": {"v1"}})
 }

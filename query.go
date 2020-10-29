@@ -74,11 +74,19 @@ type Unmarshaler interface {
 type Errors map[string][]string
 
 // Add 为查询参数 key 添加一条新的错误信息
-func (err Errors) Add(key, val string) {
-	err[key] = append(err[key], val)
+func (err Errors) Add(key string, val ...string) {
+	if len(val) == 0 {
+		panic("参数 val 必须指定")
+	}
+
+	err[key] = append(err[key], val...)
 }
 
 // Set 将查询参数 key 的错误信息改为 val
-func (err Errors) Set(key, val string) {
-	err[key] = []string{val}
+func (err Errors) Set(key string, val ...string) {
+	if len(val) == 0 {
+		panic("参数 val 必须指定")
+	}
+
+	err[key] = val
 }
