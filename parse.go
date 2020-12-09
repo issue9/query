@@ -3,6 +3,7 @@
 package query
 
 import (
+	"encoding"
 	"net/url"
 	"reflect"
 	"strings"
@@ -13,6 +14,8 @@ import (
 // Parse 将查询参数解析到一个对象中
 //
 // 返回的是每一个字段对应的错误信息。
+// 如果 queries 中的元素，实现了 UnmarshalQuery 或是 encoding.UnmarshalText，
+// 则会调用相应的接口解码。
 func Parse(queries url.Values, v interface{}) (errors Errors) {
 	rval := reflect.ValueOf(v)
 	for rval.Kind() == reflect.Ptr {
@@ -71,15 +74,27 @@ func parseFieldValue(vals url.Values, errors Errors, tf reflect.StructField, vf 
 		return
 	}
 
-	if q, ok := vf.Addr().Interface().(Unmarshaler); ok {
+	if !unmarshal(name, vf.Addr(), val, errors) {
+		return
+	}
+}
+
+func unmarshal(name string, vf reflect.Value, val string, errors Errors) (ok bool) {
+	if q, ok := vf.Interface().(Unmarshaler); ok {
 		if err := q.UnmarshalQuery(val); err != nil {
 			errors.Add(name, err.Error())
-			return
+			return false
+		}
+	} else if u, ok := vf.Interface().(encoding.TextUnmarshaler); ok {
+		if err := u.UnmarshalText([]byte(val)); err != nil {
+			errors.Add(name, err.Error())
+			return false
 		}
 	} else if err := conv.Value(val, vf); err != nil {
 		errors.Add(name, err.Error())
-		return
+		return false
 	}
+	return true
 }
 
 func parseFieldSlice(form url.Values, errors Errors, tf reflect.StructField, vf reflect.Value) {
@@ -121,13 +136,7 @@ func parseFieldSlice(form url.Values, errors Errors, tf reflect.StructField, vf 
 	}
 	for _, v := range vals {
 		elem := reflect.New(elemtype)
-		if q, ok := elem.Interface().(Unmarshaler); ok {
-			if err := q.UnmarshalQuery(v); err != nil {
-				errors.Add(name, err.Error())
-				return
-			}
-		} else if err := conv.Value(v, elem); err != nil {
-			errors.Add(name, err.Error())
+		if !unmarshal(name, elem, v, errors) {
 			return
 		}
 		vf.Set(reflect.Append(vf, elem.Elem()))

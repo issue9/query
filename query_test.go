@@ -2,9 +2,15 @@
 
 package query
 
-import "fmt"
+import (
+	"bytes"
+	"encoding"
+	"fmt"
+)
 
 type State int
+
+type Text int
 
 const (
 	StateNormal State = iota + 1 // 正常
@@ -12,12 +18,19 @@ const (
 	StateLeft                    // 离职
 )
 
+const (
+	TextNormal Text = iota
+	TextDeleted
+)
+
 var (
 	x State       = StateLeft
 	_ Unmarshaler = (*State)(&x)
+
+	y Text                     = TextDeleted
+	_ encoding.TextUnmarshaler = (*Text)(&y)
 )
 
-// UnmarshalQuery 解码
 func (s *State) UnmarshalQuery(data string) error {
 	switch data {
 	case "normal":
@@ -33,10 +46,22 @@ func (s *State) UnmarshalQuery(data string) error {
 	return nil
 }
 
+func (t *Text) UnmarshalText(bs []byte) error {
+	if bytes.Equal(bs, []byte("normal")) {
+		*t = TextNormal
+	} else if bytes.Equal(bs, []byte("deleted")) {
+		*t = TextDeleted
+	} else {
+		return fmt.Errorf("无效的值")
+	}
+	return nil
+}
+
 type testQueryString struct {
 	String  string   `query:"string,str1,str2"`
 	Strings []string `query:"strings,str1,str2"`
 	State   State    `query:"state,normal"`
+	Text    Text     `query:"text,normal"`
 }
 
 // 带中文的字段

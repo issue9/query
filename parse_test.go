@@ -27,7 +27,7 @@ func TestParseField(t *testing.T) {
 	a := assert.New(t)
 
 	errors := map[string][]string{}
-	r := httptest.NewRequest(http.MethodGet, "/q?string=str&strings=s1,s2", nil)
+	r := httptest.NewRequest(http.MethodGet, "/q?string=str&strings=s1,s2&text=deleted", nil)
 	data := &testQueryObject{}
 	parseField(r.URL.Query(), reflect.ValueOf(data).Elem(), errors)
 	a.Empty(errors)
@@ -35,7 +35,8 @@ func TestParseField(t *testing.T) {
 		Equal(data.State, StateNormal).
 		Equal(data.Strings, []string{"s1", "s2"}).
 		Equal(data.Int, 1). // 默认值
-		Equal(data.Floats, []float64{1.1, 2.2})
+		Equal(data.Floats, []float64{1.1, 2.2}).
+		Equal(data.Text, TextDeleted)
 
 	errors = map[string][]string{}
 	r = httptest.NewRequest(http.MethodGet, "/q?floats=1,1.1&int=5&strings=s1", nil)
