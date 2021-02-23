@@ -1,8 +1,8 @@
 query
 [![Go](https://github.com/issue9/query/workflows/Go/badge.svg)](https://github.com/issue9/query/actions?query=workflow%3AGo)
-[![Go version](https://img.shields.io/badge/Go-1.13-brightgreen.svg?style=flat)](https://golang.org)
+![Go version](https://img.shields.io/github/go-mod/go-version/issue9/query)
 [![Go Report Card](https://goreportcard.com/badge/github.com/issue9/query)](https://goreportcard.com/report/github.com/issue9/query)
-[![license](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](https://opensource.org/licenses/MIT)
+![License](https://img.shields.io/github/license/issue9/query)
 [![codecov](https://codecov.io/gh/issue9/query/branch/master/graph/badge.svg)](https://codecov.io/gh/issue9/query)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/issue9/query/v2)](https://pkg.go.dev/github.com/issue9/query/v2)
 ======
