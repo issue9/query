@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"reflect"
 	"strings"
+	"unicode"
 
 	"github.com/issue9/conv"
 )
@@ -145,6 +146,9 @@ func parseFieldSlice(form url.Values, errors Errors, tf reflect.StructField, vf 
 
 // 返回值中的 name 如果为空，表示忽略这个字段的内容。
 func getQueryTag(field reflect.StructField) (name, def string) {
+	if field.Name != "" && unicode.IsLower(rune(field.Name[0])) {
+		return "", ""
+	}
 	tag := field.Tag.Get(Tag)
 	if tag == "-" {
 		return "", ""

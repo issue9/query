@@ -58,10 +58,11 @@ func (t *Text) UnmarshalText(bs []byte) error {
 }
 
 type testQueryString struct {
-	String  string   `query:"string,str1,str2"`
-	Strings []string `query:"strings,str1,str2"`
-	State   State    `query:"state,normal"`
-	Text    Text     `query:"text,normal"`
+	String     string   `query:"string,str1,str2"`
+	Strings    []string `query:"strings,str1,str2"`
+	State      State    `query:"state,normal"`
+	Text       Text     `query:"text,normal"`
+	unExported string
 }
 
 // 带中文的字段
