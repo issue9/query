@@ -8,11 +8,11 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/issue9/assert"
+	"github.com/issue9/assert/v2"
 )
 
 func TestParse(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 	r := httptest.NewRequest(http.MethodGet, "/q?string=str&strings=s1,s2&int=0", nil)
 	data := &testQueryObject{}
 
@@ -24,7 +24,7 @@ func TestParse(t *testing.T) {
 }
 
 func TestParseField(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	errors := map[string][]string{}
 	r := httptest.NewRequest(http.MethodGet, "/q?string=str&strings=s1,s2&text=deleted", nil)
@@ -70,7 +70,7 @@ func TestParseField(t *testing.T) {
 }
 
 func TestParseField_slice(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	// 指定了默认值，也指定了参数。则以参数优先
 	errors := map[string][]string{}
@@ -136,7 +136,7 @@ func TestParseField_slice(t *testing.T) {
 }
 
 func TestGetQueryTag(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	test := func(tag, name, def string) {
 		field := reflect.StructField{
