@@ -1,5 +1,6 @@
-github.com/issue9/assert/v2 v2.0.0 h1:vN7fr70g5ND6zM39tPZk/E4WCyjGMqApmFbujSTmEo0=
 github.com/issue9/assert/v2 v2.0.0/go.mod h1:rKr1eVGzXUhAo2af1thiKAhIA8uiSK9Wyn7mcZ4BzAg=
+github.com/issue9/assert/v2 v2.1.0 h1:iJWTRoljwEPHzMLoI1ObGEcFnbI0QUXPq2OhTcWP1wA=
+github.com/issue9/assert/v2 v2.1.0/go.mod h1:rKr1eVGzXUhAo2af1thiKAhIA8uiSK9Wyn7mcZ4BzAg=
 github.com/issue9/conv v1.2.2 h1:DlvooVwcCgHxGxgVNSt4LFGxIVzWbMV8E2dmQlrGHNA=
 github.com/issue9/conv v1.2.2/go.mod h1:uDqE/xgXbZ5UjC2J5+HLIoguE0qOKGzv7EzLzkvoRPE=
 github.com/issue9/sliceutil v0.7.1 h1:lnzYryF50+mxqvnsPZRZ1on+gxx0Khx5t5G7q0Cf7gU=
