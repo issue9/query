@@ -83,9 +83,9 @@ type testQueryObject struct {
 	Float float32 `query:"-"`
 }
 
-var _ Sanitizer = &testQueryString{}
+var _ Sanitizer = testQueryString{}
 
-func (obj *testQueryString) SanitizeQuery(errors Errors) {
+func (obj testQueryString) SanitizeQuery(errors Errors) {
 	if obj.State == -1 {
 		errors.Add("state", "取值错误")
 	}

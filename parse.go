@@ -15,10 +15,16 @@ import (
 // Parse 将查询参数解析到一个对象中
 //
 // 返回的是每一个字段对应的错误信息。
-// 如果 queries 中的元素，实现了 UnmarshalQuery 或是 encoding.UnmarshalText，
+// 如果 queries 中的元素，实现了 Unmarshaler 或是 encoding.TextUnmarshaler，
 // 则会调用相应的接口解码。
+//
+// v 只能是指针，如果是指针的批针，请注意接口的实现是否符合你的预期。
 func Parse(queries url.Values, v interface{}) (errors Errors) {
 	rval := reflect.ValueOf(v)
+	if rval.Kind() != reflect.Ptr {
+		panic("v 必须为指针")
+	}
+
 	for rval.Kind() == reflect.Ptr {
 		rval = rval.Elem()
 	}
@@ -75,9 +81,7 @@ func parseFieldValue(vals url.Values, errors Errors, tf reflect.StructField, vf 
 		return
 	}
 
-	if !unmarshal(name, vf.Addr(), val, errors) {
-		return
-	}
+	unmarshal(name, vf.Addr(), val, errors)
 }
 
 func unmarshal(name string, vf reflect.Value, val string, errors Errors) (ok bool) {

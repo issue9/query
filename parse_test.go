@@ -13,14 +13,30 @@ import (
 
 func TestParse(t *testing.T) {
 	a := assert.New(t, false)
+
 	r := httptest.NewRequest(http.MethodGet, "/q?string=str&strings=s1,s2&int=0", nil)
 	data := &testQueryObject{}
-
 	errors := Parse(r.URL.Query(), data)
 	a.Equal(len(errors["int"]), 2)
 	a.Equal(data.Int, 0).
 		Equal(data.String, "str").
 		Equal(data.Strings, []string{"s1", "s2"})
+
+	// 指针的指针，未实现 Sanitizer 接口。
+	r = httptest.NewRequest(http.MethodGet, "/q?string=str&strings=s1,s2&int=0", nil)
+	data = &testQueryObject{}
+	errors = Parse(r.URL.Query(), &data)
+	a.Equal(len(errors["int"]), 0)
+	a.Equal(data.Int, 0).
+		Equal(data.String, "str").
+		Equal(data.Strings, []string{"s1", "s2"})
+
+	// 指针的指针
+	r = httptest.NewRequest(http.MethodGet, "/q?state=-1", nil)
+	data2 := testQueryString{}
+	a.PanicString(func() {
+		Parse(r.URL.Query(), data2)
+	}, "v 必须为指针")
 }
 
 func TestParseField(t *testing.T) {

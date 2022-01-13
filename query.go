@@ -44,8 +44,9 @@ const Tag = "query"
 
 // Sanitizer 表示对一个查询参数构成的结构体进行数据验证和内容修正的接口
 type Sanitizer interface {
-	// 参数 errors 用来保存由函数中发现的错误信息。
+	// SanitizeQuery 对查询参数和进验证和调整
 	//
+	// 参数 errors 用来保存由函数中发现的错误信息。
 	// 其中的键名为错误字段名称，键值为错误信息。
 	SanitizeQuery(errors Errors)
 }
@@ -65,8 +66,11 @@ type Sanitizer interface {
 //  }
 //
 // NOTE: 空值不会调用该接口。
+//
+// 如果找不到 Unmarshaler 接口，会尝试去查找是否也实现了 encoding.TextUnmarshaler，
+// 所以如果对象有已经实现了 encoding.TextUnmarshaler，
+// 则不需要再去实现 Unmarshaler，除非两者的解码方式是不同的。
 type Unmarshaler interface {
-	// data 表示由查询参数传递过来的单个值。
 	UnmarshalQuery(data string) error
 }
 
