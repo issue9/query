@@ -6,4 +6,4 @@ require (
 	github.com/issue9/validation v0.6.0
 )
 
-go 1.13
+go 1.16
