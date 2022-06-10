@@ -17,16 +17,7 @@ func TestParse(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/q?string=str&strings=s1,s2&int=0", nil)
 	data := &testQueryObject{}
 	errors := Parse(r.URL.Query(), data)
-	a.Equal(len(errors["int"]), 2)
-	a.Equal(data.Int, 0).
-		Equal(data.String, "str").
-		Equal(data.Strings, []string{"s1", "s2"})
-
-	// 指针的指针，未实现 Sanitizer 接口。
-	r = httptest.NewRequest(http.MethodGet, "/q?string=str&strings=s1,s2&int=0", nil)
-	data = &testQueryObject{}
-	errors = Parse(r.URL.Query(), &data)
-	a.Equal(len(errors["int"]), 0)
+	a.Nil(errors["int"])
 	a.Equal(data.Int, 0).
 		Equal(data.String, "str").
 		Equal(data.Strings, []string{"s1", "s2"})
@@ -42,7 +33,7 @@ func TestParse(t *testing.T) {
 func TestParseField(t *testing.T) {
 	a := assert.New(t, false)
 
-	errors := map[string][]string{}
+	errors := map[string]error{}
 	r := httptest.NewRequest(http.MethodGet, "/q?string=str&strings=s1,s2&text=deleted", nil)
 	data := &testQueryObject{}
 	parseField(r.URL.Query(), reflect.ValueOf(data).Elem(), errors)
@@ -54,7 +45,7 @@ func TestParseField(t *testing.T) {
 		Equal(data.Floats, []float64{1.1, 2.2}).
 		Equal(data.Text, TextDeleted)
 
-	errors = map[string][]string{}
+	errors = map[string]error{}
 	r = httptest.NewRequest(http.MethodGet, "/q?floats=1,1.1&int=5&strings=s1", nil)
 	data = &testQueryObject{}
 	parseField(r.URL.Query(), reflect.ValueOf(data).Elem(), errors)
@@ -64,7 +55,7 @@ func TestParseField(t *testing.T) {
 		Equal(data.Strings, []string{"s1"})
 
 	// 非英文内容
-	errors = map[string][]string{}
+	errors = map[string]error{}
 	r = httptest.NewRequest(http.MethodGet, "/q?字符串=字符串1&字符串列表=字符串2&字符串列表=字符串3", nil)
 	cnobj := &testCNQueryString{}
 	parseField(r.URL.Query(), reflect.ValueOf(cnobj).Elem(), errors)
@@ -73,7 +64,7 @@ func TestParseField(t *testing.T) {
 		Equal(cnobj.Strings, []string{"字符串2", "字符串3"})
 
 	// 出错时的处理
-	errors = map[string][]string{}
+	errors = map[string]error{}
 	r = httptest.NewRequest(http.MethodGet, "/q?floats=str,1.1&array=10&int=5&strings=s1", nil)
 	data = &testQueryObject{
 		Floats: []float64{3.3, 4.4},
@@ -89,7 +80,7 @@ func TestParseField_slice(t *testing.T) {
 	a := assert.New(t, false)
 
 	// 指定了默认值，也指定了参数。则以参数优先
-	errors := map[string][]string{}
+	errors := map[string]error{}
 	r := httptest.NewRequest(http.MethodGet, "/q?floats=11.1", nil)
 	data := &testQueryObject{
 		Floats: []float64{3.3, 4.4},
@@ -99,7 +90,7 @@ func TestParseField_slice(t *testing.T) {
 	a.Equal(data.Floats, []float64{11.1})
 
 	// 指定了默认值，指定空参数，则使用默认值
-	errors = map[string][]string{}
+	errors = map[string]error{}
 	r = httptest.NewRequest(http.MethodGet, "/q?floats=", nil)
 	data = &testQueryObject{
 		Floats: []float64{3.3, 4.4},
@@ -109,7 +100,7 @@ func TestParseField_slice(t *testing.T) {
 	a.Equal(data.Floats, []float64{3.3, 4.4})
 
 	// 指定了默认值，未指定参数，则使用默认值
-	errors = map[string][]string{}
+	errors = map[string]error{}
 	r = httptest.NewRequest(http.MethodGet, "/q", nil)
 	data = &testQueryObject{
 		Floats: []float64{3.3, 4.4},
@@ -119,7 +110,7 @@ func TestParseField_slice(t *testing.T) {
 	a.Equal(data.Floats, []float64{3.3, 4.4})
 
 	// 都未指定，则使用 struct tag 中的默认值
-	errors = map[string][]string{}
+	errors = map[string]error{}
 	r = httptest.NewRequest(http.MethodGet, "/q", nil)
 	data = &testQueryObject{}
 	parseField(r.URL.Query(), reflect.ValueOf(data).Elem(), errors)
@@ -127,7 +118,7 @@ func TestParseField_slice(t *testing.T) {
 	a.Equal(data.Floats, []float64{1.1, 2.2})
 
 	// 采用 x=1&x=2的方式传递数组
-	errors = map[string][]string{}
+	errors = map[string]error{}
 	r = httptest.NewRequest(http.MethodGet, "/q?floats=3.3&floats=4.4", nil)
 	data = &testQueryObject{}
 	parseField(r.URL.Query(), reflect.ValueOf(data).Elem(), errors)
@@ -135,7 +126,7 @@ func TestParseField_slice(t *testing.T) {
 	a.Equal(data.Floats, []float64{3.3, 4.4})
 
 	// 采用 x=1&x=2的方式传递数组，且值中带逗号
-	errors = map[string][]string{}
+	errors = map[string]error{}
 	r = httptest.NewRequest(http.MethodGet, "/q?strings=str1&strings=str2,str3", nil)
 	data = &testQueryObject{}
 	parseField(r.URL.Query(), reflect.ValueOf(data).Elem(), errors)
@@ -143,11 +134,11 @@ func TestParseField_slice(t *testing.T) {
 	a.Equal(data.Strings, []string{"str1", "str2,str3"})
 
 	// 无法解析的参数
-	errors = map[string][]string{}
+	errors = map[string]error{}
 	r = httptest.NewRequest(http.MethodGet, "/q?floats=3x.5,bb", nil)
 	data = &testQueryObject{}
 	parseField(r.URL.Query(), reflect.ValueOf(data).Elem(), errors)
-	a.True(len(errors["floats"]) > 0)
+	a.NotEmpty(errors["floats"])
 	a.Empty(data.Floats)
 }
 

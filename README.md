@@ -35,14 +35,6 @@ type struct Query {
     States []State `query:"state,normal"`
 }
 
-func (q *Query) SanitizeQuery(errors map[string]string) {
-    if q.Page < 0 {
-        errors["page"] = "不能小于零"
-    }
-
-    // 其它字段的验证
-}
-
 func handle(w http.ResponseWriter, r *http.Request) {
     q := &Query{}
     errors := query.Parse(r.URL.Query(), q)

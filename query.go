@@ -37,19 +37,8 @@
 // 中指定的 []int{1,2}。
 package query
 
-import "github.com/issue9/validation"
-
 // Tag 在 struct tag 的标签名称
 const Tag = "query"
-
-// Sanitizer 表示对一个查询参数构成的结构体进行数据验证和内容修正的接口
-type Sanitizer interface {
-	// SanitizeQuery 对查询参数和进验证和调整
-	//
-	// 参数 errors 用来保存由函数中发现的错误信息。
-	// 其中的键名为错误字段名称，键值为错误信息。
-	SanitizeQuery(errors Errors)
-}
 
 // Unmarshaler 该接口实现在了将一些特定的查询参数格式转换成其它类型的接口
 //
@@ -73,8 +62,3 @@ type Sanitizer interface {
 type Unmarshaler interface {
 	UnmarshalQuery(data string) error
 }
-
-// Errors 表示一组错误信息的集合
-//
-// 键名查询参数名称，键值则为在解析和验证过种中返回的错误信息。
-type Errors = validation.Messages

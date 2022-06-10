@@ -19,7 +19,7 @@ import (
 // 则会调用相应的接口解码。
 //
 // v 只能是指针，如果是指针的批针，请注意接口的实现是否符合你的预期。
-func Parse(queries url.Values, v interface{}) (errors Errors) {
+func Parse(queries url.Values, v interface{}) map[string]error {
 	rval := reflect.ValueOf(v)
 	if rval.Kind() != reflect.Ptr {
 		panic("v 必须为指针")
@@ -29,18 +29,15 @@ func Parse(queries url.Values, v interface{}) (errors Errors) {
 		rval = rval.Elem()
 	}
 
-	errors = make(Errors, rval.NumField())
+	errors := make(map[string]error, rval.NumField())
 	parseField(queries, rval, errors)
 
-	// 接口在转换完成之后调用。
-	if s, ok := v.(Sanitizer); ok {
-		s.SanitizeQuery(errors)
-	}
+	// NOTE: 不应该由 Parse 实现对整个对象内容的检测，那应该是 v 的实现应当做的事。
 
 	return errors
 }
 
-func parseField(vals url.Values, rval reflect.Value, errors Errors) {
+func parseField(vals url.Values, rval reflect.Value, errors map[string]error) {
 	rtype := rval.Type()
 	for i := 0; i < rtype.NumField(); i++ {
 		tf := rtype.Field(i)
@@ -60,10 +57,10 @@ func parseField(vals url.Values, rval reflect.Value, errors Errors) {
 		default:
 			parseFieldValue(vals, errors, tf, vf)
 		}
-	} // end for
+	}
 }
 
-func parseFieldValue(vals url.Values, errors Errors, tf reflect.StructField, vf reflect.Value) {
+func parseFieldValue(vals url.Values, errors map[string]error, tf reflect.StructField, vf reflect.Value) {
 	name, def := getQueryTag(tf)
 	if name == "" {
 		return
@@ -84,25 +81,25 @@ func parseFieldValue(vals url.Values, errors Errors, tf reflect.StructField, vf 
 	unmarshal(name, vf.Addr(), val, errors)
 }
 
-func unmarshal(name string, vf reflect.Value, val string, errors Errors) (ok bool) {
+func unmarshal(name string, vf reflect.Value, val string, errors map[string]error) (ok bool) {
 	if q, ok := vf.Interface().(Unmarshaler); ok {
 		if err := q.UnmarshalQuery(val); err != nil {
-			errors.Add(name, err.Error())
+			errors[name] = err
 			return false
 		}
 	} else if u, ok := vf.Interface().(encoding.TextUnmarshaler); ok {
 		if err := u.UnmarshalText([]byte(val)); err != nil {
-			errors.Add(name, err.Error())
+			errors[name] = err
 			return false
 		}
 	} else if err := conv.Value(val, vf); err != nil {
-		errors.Add(name, err.Error())
+		errors[name] = err
 		return false
 	}
 	return true
 }
 
-func parseFieldSlice(form url.Values, errors Errors, tf reflect.StructField, vf reflect.Value) {
+func parseFieldSlice(form url.Values, errors map[string]error, tf reflect.StructField, vf reflect.Value) {
 	name, def := getQueryTag(tf)
 	if name == "" {
 		return
