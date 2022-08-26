@@ -12,14 +12,29 @@ import (
 	"github.com/issue9/conv"
 )
 
-// Parse 将查询参数解析到一个对象中
+// Parse 将查询参数解析到 v
+func Parse(queries url.Values, v any) map[string]error {
+	errors := make(map[string]error, 10)
+	ParseWithLog(queries, v, func(name string, err error) { errors[name] = err })
+	return errors
+}
+
+// ParseWithLog 将查询参数解析至 v 中
 //
-// 返回的是每一个字段对应的错误信息。
-// 如果 queries 中的元素，实现了 Unmarshaler 或是 encoding.TextUnmarshaler，
+// 如果 queries 中的元素，实现了 [Unmarshaler] 或是 [encoding.TextUnmarshaler]，
 // 则会调用相应的接口解码。
 //
+// 如果有错误，则调用 log 方法进行处理，log 原型如下：
+//
+//	func(name string, err error)
+//
+// 其中的 name 表示查询参数名称，err 表示解析该参数时的错误信息。
+//
 // v 只能是指针，如果是指针的批针，请注意接口的实现是否符合你的预期。
-func Parse(queries url.Values, v interface{}) map[string]error {
+//
+// NOTE: ParseWithLog 适合在已经有错误处理方式的代码中使用，比如库的作者。
+// 一般情况下 [Parse] 会更佳合适。
+func ParseWithLog(queries url.Values, v any, log func(string, error)) {
 	rval := reflect.ValueOf(v)
 	if rval.Kind() != reflect.Ptr {
 		panic("v 必须为指针")
@@ -29,21 +44,18 @@ func Parse(queries url.Values, v interface{}) map[string]error {
 		rval = rval.Elem()
 	}
 
-	errors := make(map[string]error, rval.NumField())
-	parseField(queries, rval, errors)
-
 	// NOTE: 不应该由 Parse 实现对整个对象内容的检测，那应该是 v 的实现应当做的事。
 
-	return errors
+	parseField(queries, rval, log)
 }
 
-func parseField(vals url.Values, rval reflect.Value, errors map[string]error) {
+func parseField(vals url.Values, rval reflect.Value, log func(string, error)) {
 	rtype := rval.Type()
 	for i := 0; i < rtype.NumField(); i++ {
 		tf := rtype.Field(i)
 
 		if tf.Anonymous {
-			parseField(vals, rval.Field(i), errors)
+			parseField(vals, rval.Field(i), log)
 			continue
 		}
 
@@ -51,16 +63,16 @@ func parseField(vals url.Values, rval reflect.Value, errors map[string]error) {
 
 		switch tf.Type.Kind() {
 		case reflect.Slice:
-			parseFieldSlice(vals, errors, tf, vf)
+			parseSliceFieldValue(vals, log, tf, vf)
 		case reflect.Ptr, reflect.Chan, reflect.Func, reflect.Array, reflect.Complex128, reflect.Complex64:
 			// 这些类型的字段，直接忽略
 		default:
-			parseFieldValue(vals, errors, tf, vf)
+			parseFieldValue(vals, log, tf, vf)
 		}
 	}
 }
 
-func parseFieldValue(vals url.Values, errors map[string]error, tf reflect.StructField, vf reflect.Value) {
+func parseFieldValue(vals url.Values, log func(string, error), tf reflect.StructField, vf reflect.Value) {
 	name, def := getQueryTag(tf)
 	if name == "" {
 		return
@@ -78,28 +90,10 @@ func parseFieldValue(vals url.Values, errors map[string]error, tf reflect.Struct
 		return
 	}
 
-	unmarshal(name, vf.Addr(), val, errors)
+	unmarshal(name, vf.Addr(), val, log)
 }
 
-func unmarshal(name string, vf reflect.Value, val string, errors map[string]error) (ok bool) {
-	if q, ok := vf.Interface().(Unmarshaler); ok {
-		if err := q.UnmarshalQuery(val); err != nil {
-			errors[name] = err
-			return false
-		}
-	} else if u, ok := vf.Interface().(encoding.TextUnmarshaler); ok {
-		if err := u.UnmarshalText([]byte(val)); err != nil {
-			errors[name] = err
-			return false
-		}
-	} else if err := conv.Value(val, vf); err != nil {
-		errors[name] = err
-		return false
-	}
-	return true
-}
-
-func parseFieldSlice(form url.Values, errors map[string]error, tf reflect.StructField, vf reflect.Value) {
+func parseSliceFieldValue(form url.Values, log func(string, error), tf reflect.StructField, vf reflect.Value) {
 	name, def := getQueryTag(tf)
 	if name == "" {
 		return
@@ -132,17 +126,35 @@ func parseFieldSlice(form url.Values, errors map[string]error, tf reflect.Struct
 	// 指定了参数，则舍弃 slice 中的旧值
 	vf.Set(vf.Slice(0, 0))
 
-	elemtype := tf.Type.Elem()
-	for elemtype.Kind() == reflect.Ptr {
-		elemtype = elemtype.Elem()
+	elemType := tf.Type.Elem()
+	for elemType.Kind() == reflect.Ptr {
+		elemType = elemType.Elem()
 	}
 	for _, v := range vals {
-		elem := reflect.New(elemtype)
-		if !unmarshal(name, elem, v, errors) {
+		elem := reflect.New(elemType)
+		if !unmarshal(name, elem, v, log) {
 			return
 		}
 		vf.Set(reflect.Append(vf, elem.Elem()))
 	}
+}
+
+func unmarshal(name string, vf reflect.Value, val string, log func(string, error)) (ok bool) {
+	if q, ok := vf.Interface().(Unmarshaler); ok {
+		if err := q.UnmarshalQuery(val); err != nil {
+			log(name, err)
+			return false
+		}
+	} else if u, ok := vf.Interface().(encoding.TextUnmarshaler); ok {
+		if err := u.UnmarshalText([]byte(val)); err != nil {
+			log(name, err)
+			return false
+		}
+	} else if err := conv.Value(val, vf); err != nil {
+		log(name, err)
+		return false
+	}
+	return true
 }
 
 // 返回值中的 name 如果为空，表示忽略这个字段的内容。

@@ -1,5 +1,5 @@
-github.com/issue9/assert/v3 v3.0.0 h1:/emHhxUb1QP9UmZLy69RhkMyvlyhyqnu+toDlSyWhZg=
-github.com/issue9/assert/v3 v3.0.0/go.mod h1:yft/uaskRpwQTyBT3n1zRl91SR1wNlO4fLZHzOa4bdM=
+github.com/issue9/assert/v3 v3.0.1 h1:8DPOYgzX3ajiyrVZz6f3GoLn4wuy+vIV750CKFgFGmE=
+github.com/issue9/assert/v3 v3.0.1/go.mod h1:yft/uaskRpwQTyBT3n1zRl91SR1wNlO4fLZHzOa4bdM=
 github.com/issue9/conv v1.3.1 h1:c+VnP9knVnGelZ8zbO5efmACthaoAUaG1522l5XxZUs=
 github.com/issue9/conv v1.3.1/go.mod h1:yyrOg9M6wXOa3O18ktylaNTbDdHtlvorxnUUWapn1KA=
 golang.org/x/exp v0.0.0-20220609121020-a51bd0440498 h1:TF0FvLUGEq/8wOt/9AV1nj6D4ViZGUIGCMQfCv7VRXY=

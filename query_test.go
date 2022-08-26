@@ -13,9 +13,9 @@ type State int
 type Text int
 
 const (
-	StateNormal State = iota + 1 // 正常
-	StateLocked                  // 锁定
-	StateLeft                    // 离职
+	StateNormal State = iota + 1
+	StateLocked
+	StateLeft
 )
 
 const (
