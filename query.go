@@ -62,11 +62,11 @@ const Tag = "query"
 //	    }
 //	}
 //
-// NOTE: 空值不会调用该接口。
-//
 // 如果找不到 Unmarshaler 接口，会尝试去查找是否也实现了 encoding.TextUnmarshaler，
 // 所以如果对象有已经实现了 encoding.TextUnmarshaler，
 // 则不需要再去实现 Unmarshaler，除非两者的解码方式是不同的。
+//
+// NOTE: 空值不会调用该接口。
 type Unmarshaler interface {
 	UnmarshalQuery(data string) error
 }
