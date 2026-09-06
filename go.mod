@@ -1,8 +1,8 @@
 module github.com/issue9/query/v3
 
 require (
-	github.com/issue9/assert/v4 v4.3.1
-	github.com/issue9/conv v1.3.6
+	github.com/issue9/assert/v5 v5.0.0
+	github.com/issue9/conv v1.4.0
 )
 
-go 1.18
+go 1.27.0

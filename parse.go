@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018-2024 caixw
+// SPDX-FileCopyrightText: 2018-2026 caixw
 //
 // SPDX-License-Identifier: MIT
 
@@ -38,11 +38,11 @@ func Parse(queries url.Values, v any) map[string]error {
 // 一般情况下 [Parse] 会更佳合适。
 func ParseWithLog(queries url.Values, v any, log func(string, error)) {
 	rval := reflect.ValueOf(v)
-	if rval.Kind() != reflect.Ptr {
+	if rval.Kind() != reflect.Pointer {
 		panic("v 必须为指针")
 	}
 
-	for rval.Kind() == reflect.Ptr {
+	for rval.Kind() == reflect.Pointer {
 		rval = rval.Elem()
 	}
 
@@ -66,7 +66,7 @@ func parseField(vals url.Values, rval reflect.Value, log func(string, error)) {
 		switch tf.Type.Kind() {
 		case reflect.Slice:
 			parseSliceFieldValue(vals, log, tf, vf)
-		case reflect.Ptr, reflect.Chan, reflect.Func, reflect.Array, reflect.Complex128, reflect.Complex64:
+		case reflect.Pointer, reflect.Chan, reflect.Func, reflect.Array, reflect.Complex128, reflect.Complex64:
 			// 这些类型的字段，直接忽略
 		default:
 			parseFieldValue(vals, log, tf, vf)
@@ -129,7 +129,7 @@ func parseSliceFieldValue(form url.Values, log func(string, error), tf reflect.S
 	vf.Set(vf.Slice(0, 0))
 
 	elemType := tf.Type.Elem()
-	for elemType.Kind() == reflect.Ptr {
+	for elemType.Kind() == reflect.Pointer {
 		elemType = elemType.Elem()
 	}
 	for _, v := range vals {
